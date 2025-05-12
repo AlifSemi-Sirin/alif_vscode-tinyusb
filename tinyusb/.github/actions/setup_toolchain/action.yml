@@ -4,9 +4,6 @@ inputs:
   toolchain:
     description: 'Toolchain name'
     required: true
-  toolchain_url:
-    description: 'Toolchain URL or version'
-    required: false
 
 outputs:
   build_option:
@@ -20,24 +17,33 @@ runs:
       if: inputs.toolchain == 'arm-gcc'
       uses: carlosperate/arm-none-eabi-gcc-action@v1
       with:
-        release: '12.3.Rel1'
+        release: '13.2.Rel1'
 
     - name: Pull ESP-IDF docker
       if: inputs.toolchain == 'esp-idf'
       uses: ./.github/actions/setup_toolchain/espressif
       with:
         toolchain: ${{ inputs.toolchain }}
-        toolchain_url: ${{ inputs.toolchain_url }}
+
+    - name: Get Toolchain URL
+      if: >-
+        inputs.toolchain != 'arm-gcc' &&
+        inputs.toolchain != 'esp-idf'
+      id: set-toolchain-url
+      run: |
+        TOOLCHAIN_URL=$(jq -r '."${{ inputs.toolchain }}"' .github/actions/setup_toolchain/toolchain.json)
+        echo "toolchain_url=$TOOLCHAIN_URL"
+        echo "toolchain_url=$TOOLCHAIN_URL" >> $GITHUB_OUTPUT
+      shell: bash
 
     - name: Download Toolchain
       if: >-
         inputs.toolchain != 'arm-gcc' &&
-        inputs.toolchain != 'arm-iar' &&
         inputs.toolchain != 'esp-idf'
       uses: ./.github/actions/setup_toolchain/download
       with:
         toolchain: ${{ inputs.toolchain }}
-        toolchain_url: ${{ inputs.toolchain_url }}
+        toolchain_url: ${{ steps.set-toolchain-url.outputs.toolchain_url }}
 
     - name: Set toolchain option
       id: set-toolchain-option

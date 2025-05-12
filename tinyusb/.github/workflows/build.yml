@@ -51,14 +51,13 @@ jobs:
   # Build CMake
   # ---------------------------------------
   cmake:
-    # if: false
     needs: set-matrix
     uses: ./.github/workflows/build_util.yml
     strategy:
       fail-fast: false
       matrix:
         toolchain:
-          # - 'arm-clang' is built by circle-ci
+          # - 'arm-clang' is built by circle-ci in PR
           - 'aarch64-gcc'
           - 'arm-gcc'
           - 'msp430-gcc'
@@ -66,38 +65,38 @@ jobs:
     with:
       build-system: 'cmake'
       toolchain: ${{ matrix.toolchain }}
-      toolchain_url: ${{ fromJSON(needs.set-matrix.outputs.json)[matrix.toolchain].toolchain_url }}
-      build-args: ${{ toJSON(fromJSON(needs.set-matrix.outputs.json)[matrix.toolchain].family) }}
-      one-per-family: ${{ github.event_name != 'pull_request' }}
+      build-args: ${{ toJSON(fromJSON(needs.set-matrix.outputs.json)[matrix.toolchain]) }}
+      one-per-family: ${{ github.event_name == 'push' }}
 
   # ---------------------------------------
-  # Build Make
+  # Build Make (built by circle-ci in PR, only build on push here)
   # ---------------------------------------
   make:
-    # if: false
+    if: github.event_name == 'push'
     needs: set-matrix
     uses: ./.github/workflows/build_util.yml
     strategy:
       fail-fast: false
       matrix:
         toolchain:
-          # 'arm-clang' is built by circle-ci
-          - 'aarch64-gcc'
+          # 'arm-clang'
           - 'arm-gcc'
+          - 'aarch64-gcc'
           - 'msp430-gcc'
           - 'riscv-gcc'
           - 'rx-gcc'
+          - 'esp-idf'
     with:
       build-system: 'make'
       toolchain: ${{ matrix.toolchain }}
-      toolchain_url: ${{ fromJSON(needs.set-matrix.outputs.json)[matrix.toolchain].toolchain_url }}
-      build-args: ${{ toJSON(fromJSON(needs.set-matrix.outputs.json)[matrix.toolchain].family) }}
-      one-per-family: ${{ github.event_name != 'pull_request' }}
+      build-args: ${{ toJSON(fromJSON(needs.set-matrix.outputs.json)[matrix.toolchain]) }}
+      one-per-family: true
 
   # ---------------------------------------
   # Build Make on Windows/MacOS
   # ---------------------------------------
   make-os:
+    if: github.event_name == 'pull_request'
     uses: ./.github/workflows/build_util.yml
     strategy:
       fail-fast: false
@@ -111,52 +110,44 @@ jobs:
       one-per-family: true
 
   # ---------------------------------------
-  # Build Espressif
+  # Build IAR
+  # Since IAR Token secret is not passed to forked PR, only build non-forked PR with make.
+  # cmake is built by circle-ci. Due to IAR limit capacity, only build oe per family
   # ---------------------------------------
-  espressif:
-    # if: false
+  arm-iar:
+    if: false # disable for now since we got reach capacity limit too often
+    #if: github.event_name == 'push' && github.repository_owner == 'hathach'
+    needs: set-matrix
     uses: ./.github/workflows/build_util.yml
+    secrets: inherit
     strategy:
       fail-fast: false
       matrix:
-        board:
-          # ESP32-S2
-          - 'espressif_kaluga_1'
-          # ESP32-S3 skip since devkitm is also compiled in hil-test workflow
-          #- 'espressif_s3_devkitm'
+        build-system:
+          - 'make'
     with:
-      build-system: 'cmake'
-      toolchain: 'esp-idf'
-      toolchain_url: 'v5.1.1'
-      build-args: '["-b${{ matrix.board }}"]'
+      build-system: ${{ matrix.build-system }}
+      toolchain: 'arm-iar'
+      build-args: ${{ toJSON(fromJSON(needs.set-matrix.outputs.json)['arm-iar']) }}
+      one-per-family: true
 
   # ---------------------------------------
-  # Build IAR on HFP self-hosted
+  # Zephyr
   # ---------------------------------------
-  arm-iar:
-    # if: false
-    if: github.repository_owner == 'hathach'
-    needs: set-matrix
-    runs-on: [self-hosted, Linux, X64, hifiphile]
-    env:
-      BUILD_ARGS: ${{ join(fromJSON(needs.set-matrix.outputs.json)['arm-iar'].family, ' ') }}
+  zephyr:
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
     steps:
-      - name: Clean workspace
-        run: |
-          echo "Cleaning up previous run"
-          rm -rf "${{ github.workspace }}"
-          mkdir -p "${{ github.workspace }}"
-
       - name: Checkout TinyUSB
         uses: actions/checkout@v4
 
-      - name: Get Dependencies
-        run: python3 tools/get_deps.py $BUILD_ARGS
+      - name: Setup Zephyr project
+        uses: zephyrproject-rtos/action-zephyr-setup@v1
+        with:
+          app-path: examples
+          toolchains: arm-zephyr-eabi
 
       - name: Build
-        run: python3 tools/build.py --one-per-family --toolchain iar $BUILD_ARGS
-
-      - name: Test on actual hardware (hardware in the loop)
-        if: github.event_name == 'pull_request'
         run: |
-          python3 test/hil/hil_test.py hfp.json
+          west build -b pca10056 -d examples/device/cdc_msc/build examples/device/cdc_msc -- -DRTOS=zephyr
+          west build -b pca10056 -d examples/device/msc_dual_lun/build examples/device/msc_dual_lun -- -DRTOS=zephyr

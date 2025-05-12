@@ -74,8 +74,10 @@ void dcd_uninit(void);
 
 // Initializes the USB peripheral for device mode and enables it.
 // This function should enable internal D+/D- pull-up for enumeration.
-void dcd_init(uint8_t rhport)
+bool dcd_init(uint8_t rhport, const tusb_rhport_init_t* rh_init) 
 {
+    (void) rh_init;
+
     // enable 20mhz clock
     enable_cgu_clk20m();
     // enable usb peripheral clock
@@ -112,6 +114,7 @@ void dcd_init(uint8_t rhport)
 
     // set device speed (USBHS only)
     udev->dcfg_b.devspd = 0x0; // HS, this will need #if condition [TODO]
+    // udev->dcfg_b.devspd = rh_init->dev_speed; // [TODO] add support for FS/LS
 
     // allocate ring buffer for events
     memset(_evnt_buf, 0, sizeof(_evnt_buf));
@@ -170,7 +173,9 @@ void dcd_init(uint8_t rhport)
     NVIC_ClearPendingIRQ(USB_IRQ_IRQn);
     NVIC_SetPriority(USB_IRQ_IRQn, 5);
 #endif
+    
     dcd_int_enable(rhport);
+    return true;
 }
 
 
@@ -354,7 +359,12 @@ void dcd_edpt_close_all(uint8_t rhport)
 // progress through this endpoint, before returning.
 // Implementation is optional. Must be called from the USB task.
 // Interrupts could be disabled or enabled during the call.
-void dcd_edpt_close(uint8_t rhport, uint8_t ep_addr) TU_ATTR_WEAK;
+void dcd_edpt_close(uint8_t rhport, uint8_t ep_addr) 
+{
+    // TODO: implement this function
+    (void)rhport;
+    (void)ep_addr;
+}
 
 // Submit a transfer, When complete dcd_event_xfer_complete() is invoked to
 // notify the stack
@@ -682,6 +692,19 @@ static uint8_t _dcd_start_xfer(uint8_t ep, void* buf, uint32_t size, uint8_t typ
 
     // issue the block command and pass the status
     return _dcd_cmd_wait(ep, CMDTYP_DEPSTRTXFER, 0);
+}
+
+uint32_t tusb_time_millis_api(void) {
+    // [TODO] use DWT or SysTick
+    return 0;  
+    // return system_ticks_ms; // или DWT / SysTick / HAL_GetTick()
+}
+
+void tusb_time_delay_ms_api(uint32_t ms) {
+    // [TODO] use DWT or SysTick
+
+    // uint32_t start = tusb_time_millis_api();
+    // while ((tusb_time_millis_api() - start) < ms);
 }
 
 #endif // CFG_TUD_ENABLED
