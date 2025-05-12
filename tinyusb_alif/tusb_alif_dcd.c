@@ -45,6 +45,13 @@ char logbuf[48];
 #define LOG(...)
 #endif
 
+/* Wrapper function for Delay
+ * Delay for millisecond:
+ *  Provide busy loop delay
+ */
+#define USB_DELAY_mSEC(msec)       sys_busy_loop_us(msec * 1000)
+
+
 /// Structs and Buffers --------------------------------------------------------
 
 static uint32_t  _evnt_buf[1024] CFG_TUSB_MEM_SECTION __attribute__((aligned(4096))); // [TODO] runtime alloc
@@ -114,7 +121,7 @@ bool dcd_init(uint8_t rhport, const tusb_rhport_init_t* rh_init)
 
     // set device speed (USBHS only)
     udev->dcfg_b.devspd = 0x0; // HS, this will need #if condition [TODO]
-    // udev->dcfg_b.devspd = rh_init->dev_speed; // [TODO] add support for FS/LS
+    // udev->dcfg_b.devspd = rh_init->speed; // [TODO] add support for FS/LS
 
     // allocate ring buffer for events
     memset(_evnt_buf, 0, sizeof(_evnt_buf));
@@ -364,6 +371,7 @@ void dcd_edpt_close(uint8_t rhport, uint8_t ep_addr)
     // TODO: implement this function
     (void)rhport;
     (void)ep_addr;
+    TU_ASSERT(0, "dcd_edpt_close() not implemented");
 }
 
 // Submit a transfer, When complete dcd_event_xfer_complete() is invoked to
@@ -694,17 +702,19 @@ static uint8_t _dcd_start_xfer(uint8_t ep, void* buf, uint32_t size, uint8_t typ
     return _dcd_cmd_wait(ep, CMDTYP_DEPSTRTXFER, 0);
 }
 
+// ToDo - activate SysTick
+uint32_t volatile ms_ticks = 0;
+void SysTick_Handler(void) {
+  ms_ticks++;
+}
+
 uint32_t tusb_time_millis_api(void) {
-    // [TODO] use DWT or SysTick
-    return 0;  
-    // return system_ticks_ms; // или DWT / SysTick / HAL_GetTick()
+    TU_ASSERT(ms_ticks != 0, "tusb_time_millis_api() not initialized");
+    return ms_ticks; 
 }
 
 void tusb_time_delay_ms_api(uint32_t ms) {
-    // [TODO] use DWT or SysTick
-
-    // uint32_t start = tusb_time_millis_api();
-    // while ((tusb_time_millis_api() - start) < ms);
+    USB_DELAY_mSEC(ms); 
 }
 
 #endif // CFG_TUD_ENABLED
