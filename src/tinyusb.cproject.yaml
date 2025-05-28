@@ -6,6 +6,7 @@ project:
         - file: main.c
         - file: usb_desc.c
         - file: msc_disk.c
+        - file: stubs.c
 
   layers:
     - layer: ../tinyusb_alif/tinyusb_alif.clayer.yaml
