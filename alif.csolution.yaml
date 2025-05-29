@@ -39,6 +39,10 @@ solution:
   define:
     - UNICODE
     - _UNICODE
+    - BOARD_TUD_MAX_SPEED: OPT_MODE_HIGH_SPEED
+    - SECTION_USB_DMA_BUF: \"usb_dma_buf\"
+    - CFG_TUSB_MEM_SECTION: __attribute__\(\(section\(SECTION_USB_DMA_BUF\)\)\)
+    - CFG_TUSB_MEM_ALIGN: __attribute__\(\(aligned\(32\)\)\)
 
   projects:
     - project: src/tinyusb.cproject.yaml

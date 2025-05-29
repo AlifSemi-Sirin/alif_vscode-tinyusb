@@ -6,7 +6,4 @@
     "cmake.configureOnOpen": false,
 
     "cortex-debug.variableUseNaturalFormat": false,
-    "clangd.arguments": [
-        "--compile-commands-dir=/home/woody/workspace/alif/alif_vscode-tinyusb/out/tinyusb/HP/debug"
-    ],
 }
