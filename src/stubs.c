@@ -11,3 +11,18 @@ int _fstat(int val0, void * val1) TRAP_RET_ZERO
 int _isatty(int val0) TRAP_RET_ZERO
 int _getpid(void) TRAP_RET_ZERO
 void _kill(int val0, int val1) {__BKPT(0);}
+
+void board_init(void)
+{
+}
+
+uint32_t board_millis(void)
+{
+    return 0;
+}
+
+
+void board_led_write(bool state)
+{
+    (void)state;
+}
