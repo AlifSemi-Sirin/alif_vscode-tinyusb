@@ -45,4 +45,4 @@ solution:
     - CFG_TUSB_MEM_ALIGN: __attribute__\(\(aligned\(32\)\)\)
 
   projects:
-    - project: examples/device/cdc_msc/tinyusb.cproject.yaml
+    - project: examples/device/cdc_msc/device_cdc_msc.cproject.yaml
