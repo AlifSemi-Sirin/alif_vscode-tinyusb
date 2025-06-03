@@ -1,0 +1,4 @@
+[submodule "tinyusb"]
+	path = tinyusb
+	url = org-164082917@gitAlif:AlifSemi-Sirin/tinyusb.git
+	branch = alif_vscode-tinyusb
