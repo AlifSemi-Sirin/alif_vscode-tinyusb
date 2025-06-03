@@ -74,8 +74,10 @@ void dcd_uninit(void);
 
 // Initializes the USB peripheral for device mode and enables it.
 // This function should enable internal D+/D- pull-up for enumeration.
-void dcd_init(uint8_t rhport)
+bool dcd_init(uint8_t rhport, const tusb_rhport_init_t* rh_init)
 {
+    (void)rh_init;
+
     // enable 20mhz clock
     enable_cgu_clk20m();
     // enable usb peripheral clock
@@ -171,6 +173,8 @@ void dcd_init(uint8_t rhport)
     NVIC_SetPriority(USB_IRQ_IRQn, 5);
 #endif
     dcd_int_enable(rhport);
+
+    return true;
 }
 
 

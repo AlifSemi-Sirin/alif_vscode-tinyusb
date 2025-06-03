@@ -21,7 +21,7 @@ layer:
         - file: ../tinyusb/src/device/usbd_control.c
         - file: ../tinyusb/src/class/cdc/cdc_device.c
         - file: ../tinyusb/src/class/msc/msc_device.c
-        - file: ../tinyusb/hw/bsp/
+        - file: ../tinyusb/hw/bsp/board.c
         - file: ../src/family.c
 
   add-path:
