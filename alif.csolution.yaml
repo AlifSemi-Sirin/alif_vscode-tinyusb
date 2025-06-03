@@ -13,6 +13,7 @@ solution:
   packs:
     - pack: AlifSemiconductor::Ensemble@1.3.0
     - pack: ARM::CMSIS@6.0.0
+    - pack: ARM::CMSIS-FreeRTOS@11.2.0
 
   target-types:
     - type: HE
