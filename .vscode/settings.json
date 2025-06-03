@@ -6,4 +6,23 @@
     "cmake.configureOnOpen": false,
 
     "cortex-debug.variableUseNaturalFormat": false,
+    "clangd.arguments": [
+        "--compile-commands-dir=/home/woody/workspace/alif/alif_vscode-tinyusb/out/device_cdc_msc_freertos/HP/debug"
+    ],
+    "cmsis-csolution.actions": [
+        {
+            "path": "alif.csolution.yaml",
+            "target": "HE",
+            "config": {
+                "run": "Program with Security Toolkit"
+            }
+        },
+        {
+            "path": "alif.csolution.yaml",
+            "target": "HP",
+            "config": {
+                "run": "Clean all (including YML build files)"
+            }
+        }
+    ],
 }

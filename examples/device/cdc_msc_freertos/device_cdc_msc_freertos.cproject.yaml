@@ -6,7 +6,6 @@ project:
         - file: ../../../tinyusb/examples/device/cdc_msc_freertos/src/main.c
         - file: ../../../tinyusb/examples/device/cdc_msc_freertos/src/usb_descriptors.c
         - file: ../../../tinyusb/examples/device/cdc_msc_freertos/src/msc_disk.c
-        - file: ../../../tinyusb/examples/device/cdc_msc_freertos/src/freertos_hook.c
 
   layers:
     - layer: ../../../tinyusb_alif/tinyusb_alif.clayer.yaml
@@ -18,6 +17,11 @@ project:
   components:
     - component: AlifSemiconductor::Device:Startup&C Startup
     - component: ARM::CMSIS:CORE
+    
+    - component: RTOS&FreeRTOS:Core&Cortex-M
+    - component: RTOS&FreeRTOS:Config&FreeRTOS
+    - component: RTOS&FreeRTOS:Heap&Heap_4
+    - component: RTOS&FreeRTOS:Timers
 
   output:
     base-name: $Project$
