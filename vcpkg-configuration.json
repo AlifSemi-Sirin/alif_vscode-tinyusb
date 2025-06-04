@@ -1,9 +1,9 @@
 {
   "registries": [
     {
-      "name": "arm",
       "kind": "artifact",
-      "location": "file:///home/woody/workspace/alif/AEM_FILES/vcpkg-ce-registry"
+      "location": "https://artifacts.tools.arm.com/vcpkg-registry",
+      "name": "arm"
     }
   ],
   "requires": {
